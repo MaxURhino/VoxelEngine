@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'net.max_rhino.voxel_engine'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.lwjgl:lwjgl:3.1.4'
+    implementation 'org.lwjgl:lwjgl-glfw:3.1.4'
+    implementation 'org.lwjgl:lwjgl-opengl:3.1.4'
+    implementation 'org.lwjgl:lwjgl-platform:3.0.0:natives-windows'
+}
+
+application {
+    mainClass = "net.max_rhino.voxel_engine.Main"
+    applicationDefaultJvmArgs = [
+            "-Djava.library.path=${buildDir}/natives"
+    ]
+}
+
+configurations {
+    natives
+}
+
+dependencies {
+    natives "org.lwjgl:lwjgl-platform:3.0.0:natives-windows"
+    natives "net.java.jinput:jinput-platform:2.0.5:natives-windows"
+}
+
+tasks.register('extractNatives', Copy) {
+    from {
+        configurations.natives.collect { zipTree(it) }
+    }
+    into "$buildDir/natives"
+    exclude "META-INF/**"
+}
+
+tasks.named("run") {
+    dependsOn("extractNatives")
+    def runDir = file("$projectDir/run")
+    if (!runDir.exists()) {
+        runDir.mkdirs()
+    }
+    workingDir = runDir
+}
