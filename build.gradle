@@ -10,27 +10,34 @@ repositories {
     mavenCentral()
 }
 
+ext.lwjglVersion = '3.1.4'
+ext.lwjglNatives = 'natives-windows'
+
 dependencies {
-    implementation 'org.lwjgl:lwjgl:3.1.4'
-    implementation 'org.lwjgl:lwjgl-glfw:3.1.4'
-    implementation 'org.lwjgl:lwjgl-opengl:3.1.4'
-    implementation 'org.lwjgl:lwjgl-platform:3.0.0:natives-windows'
+    implementation "org.lwjgl:lwjgl:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+
+    // natives – same version as Java part
+    //natives "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
+    //natives "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
+    //natives "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
+
+    // jinput natives if you really need them (version matches your old line)
+    implementation 'net.java.jinput:jinput-platform:2.0.5'
 }
 
 application {
     mainClass = "net.max_rhino.voxel_engine.Main"
-    applicationDefaultJvmArgs = [
-            "-Djava.library.path=${buildDir}/natives"
-    ]
+
+    // Remove java.library.path – LWJGL 3 + Gradle can work without it
+    // applicationDefaultJvmArgs = [
+    //        "-Djava.library.path=${buildDir}/natives"
+    // ]
 }
 
 configurations {
     natives
-}
-
-dependencies {
-    natives "org.lwjgl:lwjgl-platform:3.0.0:natives-windows"
-    natives "net.java.jinput:jinput-platform:2.0.5:natives-windows"
 }
 
 tasks.register('extractNatives', Copy) {
@@ -48,4 +55,8 @@ tasks.named("run") {
         runDir.mkdirs()
     }
     workingDir = runDir
+
+    // If you really want to set library path manually, do it here so it always
+    // matches extracted natives (optional, you can omit this):
+    jvmArgs "-Djava.library.path=${buildDir}/natives"
 }
